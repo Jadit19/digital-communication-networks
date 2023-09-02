@@ -2,6 +2,12 @@
 
 ## Setup
 
+You'll need OpenCV to run this. Install it using:
+
+```sh
+pip3 install opencv-python
+```
+
 In a terminal, navigate to this directory and run the command:
 
 ```sh
