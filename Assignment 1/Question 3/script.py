@@ -6,11 +6,28 @@ class Gmail:
   def __init__(self):
     self.smtp_server = "smtp.gmail.com"
     self.smtp_port = 465
+    self.first_recipient = ""
+  
+  def print_exception(self, e: Exception):
+    print("[ERROR]")
+    print("----------------------")
+    print(e)
   
   def login(self, username: str, password: str):
     self.username = username
     self.encoded_username = base64.b64encode(username.encode()).decode()
     self.encoded_password = base64.b64encode(password.encode()).decode()
+    self.setup_sockets()
+    try:
+      self.interact()
+      self.interact("EHLO Adit")
+      self.interact("STARTTLS")
+      self.interact("AUTH LOGIN")
+      self.interact(self.encoded_username)
+      self.interact(self.encoded_password)
+      self.interact(f"MAIL FROM:<{self.username}>")
+    except Exception as e:
+      self.print_exception(e)
     
   def interact(self, command: str = ""):
     if str != "":
@@ -27,23 +44,22 @@ class Gmail:
     self.ssl_context = ssl.create_default_context()
     self.ssl_socket = self.ssl_context.wrap_socket(self.socket, server_hostname=self.smtp_server)
   
-  def send_email(self, recipient: str, subject: str, message: str, attachment_path: str):
-    self.setup_sockets()
+  def add_recipient(self, recipient: str):
     try:
-      self.interact()
-      self.interact("EHLO Adit")
-      self.interact("STARTTLS")
-      self.interact("AUTH LOGIN")
-      self.interact(self.encoded_username)
-      self.interact(self.encoded_password)
-      self.interact(f"MAIL FROM:<{self.username}>")
       self.interact(f"RCPT TO:<{recipient}>")
+      if self.first_recipient != "":
+        self.first_recipient = recipient
+    except Exception as e:
+      self.print_exception(e)
+  
+  def send_email(self, subject: str, message: str, attachment_path: str):
+    try:
       self.interact("DATA")
       
       self.ssl_socket.send(f"Subject: {subject}\r\n".encode())
       self.ssl_socket.send("MIME-Version: 1.0\r\n".encode())
       self.ssl_socket.send(f"From: {self.username}\r\n".encode())
-      self.ssl_socket.send(f"To: {recipient}\r\n".encode())
+      self.ssl_socket.send(f"To: {self.first_recipient}\r\n".encode())
       self.ssl_socket.send("Content-type: multipart/mixed; boundary=boundary123\r\n\r\n".encode())
       self.ssl_socket.send("--boundary123\r\n".encode())
       self.ssl_socket.send("Content-type: text/plain; charset=utf-8\r\n\r\n".encode())
@@ -61,12 +77,12 @@ class Gmail:
       self.interact(".")
       self.interact("QUIT")
     except Exception as e:
-      print("[ERROR]")
-      print("----------------------")
-      print(e)
+      self.print_exception(e)
     self.ssl_socket.close()
 
 if __name__ == "__main__":
   client = Gmail()
   client.login("emailID@gmail.com", "app_password")
-  client.send_email("aditj20@iitk.ac.in", "TEST", "Hello", "/path/to/file")
+  client.add_recipient("aditj20@iitk.ac.in")
+  client.add_recipient("200038@iitk.ac.in")
+  client.send_email("TEST", "Hello", "/path/to/file")
