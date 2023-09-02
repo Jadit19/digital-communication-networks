@@ -47,7 +47,7 @@ class Gmail:
   def add_recipient(self, recipient: str):
     try:
       self.interact(f"RCPT TO:<{recipient}>")
-      if self.first_recipient != "":
+      if self.first_recipient == "":
         self.first_recipient = recipient
     except Exception as e:
       self.print_exception(e)
