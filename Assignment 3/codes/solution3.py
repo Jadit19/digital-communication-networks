@@ -1,6 +1,13 @@
 import numpy as np
 
-P = np.array([[0, 0.5, 0.5, 0], [0.5, 0, 0, 0.5], [0.5, 0, 0, 0.5], [0, 0.5, 0.5, 0]])
+P = np.array(
+    [
+        [0.5, 0.25, 0.25, 0],
+        [0.25, 0.25, 0.25, 0.25],
+        [0.25, 0.25, 0.25, 0.25],
+        [0, 0.25, 0.25, 0.5],
+    ]
+)
 
 # Calculate eigenvalues and eigenvectors
 eigenvalues, eigenvectors = np.linalg.eig(P.T)
@@ -11,4 +18,4 @@ N = eigenvectors[:, np.where(np.isclose(eigenvalues, 1))].reshape(
 )
 
 # Print the value of N
-print(N)
+print(N / np.sum(N))
